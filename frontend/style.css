@@ -1,0 +1,89 @@
+/* Global Styling */
+body {
+    font-family: 'Arial', sans-serif;
+    background: #1e1e2f;
+    color: #fff;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+
+/* Header */
+header {
+    background: linear-gradient(90deg, #ff8c00, #ff2e63);
+    padding: 20px;
+    font-size: 24px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    box-shadow: 0px 4px 10px rgba(255, 46, 99, 0.5);
+}
+
+/* Main Section */
+main {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    padding: 30px;
+}
+
+/* Cards */
+.card {
+    background: #29293d;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 5px 15px rgba(255, 46, 99, 0.3);
+    width: 30%;
+    min-width: 300px;
+    margin: 15px;
+    transition: transform 0.3s ease-in-out;
+}
+
+.card:hover {
+    transform: scale(1.05);
+}
+
+/* Buttons */
+button {
+    background: linear-gradient(90deg, #ff2e63, #ff8c00);
+    border: none;
+    padding: 10px 15px;
+    color: white;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+button:hover {
+    background: linear-gradient(90deg, #ff8c00, #ff2e63);
+    transform: scale(1.1);
+}
+
+/* Restock Button */
+.restock {
+    background: #28a745;
+    margin-left: 10px;
+}
+
+.restock:hover {
+    background: #218838;
+}
+
+/* List Styling */
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+li {
+    background: #3b3b5f;
+    padding: 10px;
+    margin: 8px 0;
+    border-radius: 5px;
+    transition: 0.3s;
+}
+
+li:hover {
+    background: #505071;
+}

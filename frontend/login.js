@@ -15,7 +15,7 @@ createApp({
         },
         login() {
             // Simulated authentication (replace with real API call)
-            if (this.email === "admin@example.com" && this.password === "password123") {
+            if (this.email === "admin" && this.password === "123") {
                 alert("✅ Login successful! Redirecting...");
                 window.location.href = "index.html"; // Redirect to dashboard
             } else {

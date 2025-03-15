@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Management System</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+    <div id="app">
+        <header>
+            <h1>Inventory Management</h1>
+        </header>
+
+        <main>
+            <!-- Market Trends -->
+            <section class="card">
+                <h2>Market Trends</h2>
+                <p>AI-generated predictions based on demand</p>
+                <button @click="fetchMarketTrends">Update Trends</button>
+                <ul>
+                    <li v-for="(trend, index) in marketTrends" :key="index">
+                        <strong>{{ trend.item }}</strong> - {{ trend.trend }}
+                    </li>
+                </ul>
+            </section>
+
+            <!-- Inventory Tracking -->
+            <section class="card">
+                <h2>Inventory</h2>
+                <p>Track stock levels and pricing</p>
+                <ul>
+                    <li v-for="(item, index) in inventory" :key="index">
+                        <span>{{ item.name }} - <strong>{{ item.stock }}</strong> in stock - ${{ item.price }}</span>
+                        <button class="restock" @click="restockItem(item)">Restock</button>
+                    </li>
+                </ul>
+            </section>
+
+            <!-- Discount Recommendations -->
+            <section class="card">
+                <h2>Discount Recommendations</h2>
+                <p>AI suggests discounts based on stock levels</p>
+                <ul>
+                    <li v-for="(discount, index) in discountRecommendations" :key="index">
+                        <span>{{ discount.item }} - <strong>{{ discount.percentage }}%</strong> off</span>
+                    </li>
+                </ul>
+            </section>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
