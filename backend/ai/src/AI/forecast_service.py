@@ -74,29 +74,3 @@ def expiration_alerts(df, days_threshold=30):
     ]
 
     return expiring_soon
-
-
-# Main Function
-def main():
-    # Load dataset
-    df = read_data_set("grocery_dataset.csv")
-
-    # Automate Reordering
-    reorder_list = automate_reordering(df)
-    print("Reorder List:")
-    print(reorder_list)
-
-    # Supplier Scorecard
-    scorecard = supplier_scorecard(df)
-    print("Supplier Scorecard:")
-    print(scorecard)
-
-    # Expiration Alerts
-    alerts = expiration_alerts(df)
-    print("Expiration Alerts:")
-    print(alerts)
-
-
-# Run the program
-if __name__ == "__main__":
-    main()
