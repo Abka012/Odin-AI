@@ -24,8 +24,18 @@ public class InventoryService {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public InventoryItem addItem(InventoryItem item) {
-        return inventoryRepository.save(item);
-    }
+        // Check if an item with the same productName exists
+        Optional<InventoryItem> existingItem = inventoryRepository.findByProductName(item.getProductName());
+        if (existingItem.isPresent()) {
+            // Update existing item's stock level
+            InventoryItem currentItem = existingItem.get();
+            currentItem.setStockLevel(currentItem.getStockLevel() + item.getStockLevel());
+            return inventoryRepository.save(currentItem); // Save updated item
+        } else {
+            // Add new item
+            return inventoryRepository.save(item);
+            }
+        }
 
     public Optional<InventoryItem> getItem(String id) {
         return inventoryRepository.findById(id);
@@ -33,6 +43,13 @@ public class InventoryService {
 
     public List<InventoryItem> getAllItems() {
         return inventoryRepository.findAll();
+    }
+
+    public double getTotalInventoryValue() {
+        List<InventoryItem> items = inventoryRepository.findAll();
+        return items.stream()
+                .mapToDouble(item -> item.getPrice() * item.getStockLevel())
+                .sum();
     }
 
     public List<InventoryItem> getItemsByCategory(String category) {
@@ -62,7 +79,8 @@ public class InventoryService {
         return false;
     }
 
-    public InventoryItem reduceStock(String id, double quantity) { // Changed int to double
+    public InventoryItem reduceStock(String id, double quantity) { 
+
         Optional<InventoryItem> itemOpt = inventoryRepository.findById(id);
         if (itemOpt.isPresent()) {
             InventoryItem item = itemOpt.get();
