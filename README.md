@@ -8,46 +8,17 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 
-What things you need to install the software and how to install them
-
-```
-Give examples
-```
+Need to install java-21-openjdk-devel
 
 ### Installing
 
 Navigate to backend/ai/src/AI and run the following command within your terminal
 
 ```
-
 pip install -r requirements.txt
-
 ```
 until finished
 ```
-
-End with an example of getting some data out of the system or using it for a little demo
-
-## Running the tests
-
-Explain how to run the automated tests for this system
-
-### Break down into end to end tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-### And coding style tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
 ## Built With
 
 * [Spring](https://start.spring.io/) - The backend framework used

@@ -17,7 +17,7 @@
     <description>Demo project for Spring Boot</description>
 
     <properties>
-        <java.version>22</java.version> <!-- Updated to match your runtime -->
+        <java.version>21</java.version> <!-- Updated to match your runtime -->
     </properties>
 
     <dependencies>
