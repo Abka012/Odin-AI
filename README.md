@@ -16,15 +16,11 @@ Give examples
 
 ### Installing
 
-A step by step series of examples that tell you how to get a development env running
-
-Say what the step will be
+Navigate to backend/ai/src/AI and run the following command within your terminal
 
 ```
-Give the example
-```
 
-And repeat
+pip install -r requirements.txt
 
 ```
 until finished
@@ -51,10 +47,6 @@ Explain what these tests test and why
 ```
 Give an example
 ```
-
-## Deployment
-
-Add additional notes about how to deploy this on a live system
 
 ## Built With
 
