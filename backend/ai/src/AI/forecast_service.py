@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
-from statsmodels.tsa.arima.model import ARIMA
 from sklearn.linear_model import LinearRegression
 
 
