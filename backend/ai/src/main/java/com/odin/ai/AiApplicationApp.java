@@ -1,29 +1,51 @@
 package com.odin.ai;
 
+import com.odin.ai.model.InventoryItem;
+import com.odin.ai.service.InventoryService;
+import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
-import com.odin.ai.model.InventoryItem;
-import com.odin.ai.service.InventoryService;
-
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @SpringBootApplication
-@EnableMongoRepositories
+@EnableMongoRepositories(basePackages = "com.odin.ai.repository")
 public class AiApplicationApp {
     public static void main(String[] args) {
         System.out.println("Starting AiApplicationApp...");
+
+        // Load .env file for MongoDB configuration
+        Dotenv dotenv = Dotenv.configure()
+                .directory("./") // Assumes .env is in project root
+                .ignoreIfMissing() // Won't fail if .env is missing
+                .load();
+        String mongoUri = dotenv.get("DATABASE_URL");
+        System.out.println("Loaded DATABASE_URL: " + mongoUri);
+        if (mongoUri == null) {
+            System.err.println("WARNING: DATABASE_URL not found in .env! Ensure .env is in project root or use application.properties.");
+        }
+
+        // Set MongoDB properties before Spring starts
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("spring.data.mongodb.uri", mongoUri != null ? mongoUri : "mongodb://localhost:27017/retail_inventory");
+        properties.put("spring.data.mongodb.database", "retail_inventory");
+        SpringApplication app = new SpringApplication(AiApplicationApp.class);
+        app.setDefaultProperties(properties);
+
         ApplicationContext context;
         try {
-            context = SpringApplication.run(AiApplicationApp.class, args);
+            context = app.run(args);
         } catch (Exception e) {
             System.err.println("Failed to start application: " + e.getMessage());
             e.printStackTrace();
             return;
         }
+
         InventoryService service = context.getBean(InventoryService.class);
         System.out.println("Application started successfully!");
 
@@ -36,49 +58,40 @@ public class AiApplicationApp {
         System.out.println("Test items added successfully!");
 
         System.out.println("\n=== Inventory Status ===");
-        List<InventoryItem> items;
         try {
-            items = service.getAllItems();
-        } catch (Exception e) {
-            System.err.println("Failed to retrieve items: " + e.getMessage());
-            e.printStackTrace();
-            return;
-        }
-        for (InventoryItem item : items) {
-            System.out.printf("Item: %s%n", item.getProductName());
-            System.out.printf("Stock Level: %.1f%n", item.getStockLevel());
-            System.out.printf("Price: $%.2f%n", item.getPrice());
-            System.out.printf("Supplier: %s%n", item.getSupplierName());
-            boolean needsReorder;
-            try {
-                needsReorder = service.checkStockAndReorder(item.getId());
-            } catch (Exception e) {
-                System.err.println("Failed to check reorder for " + item.getProductName() + ": " + e.getMessage());
-                needsReorder = false;
+            List<InventoryItem> items = service.getAllItems();
+            if (items.isEmpty()) {
+                System.out.println("No items found in inventory.");
             }
-            System.out.printf("Needs reorder: %b%n", needsReorder);
-            boolean nearingExpiration = item.getLifeExpectancy().isBefore(now.plusMonths(2));
-            System.out.printf("Nearing expiration: %b%n", nearingExpiration);
-            System.out.println("------------------------");
-        }
+            for (InventoryItem item : items) {
+                System.out.printf("Item: %s%n", item.getProductName());
+                System.out.printf("Stock Level: %.1f%n", item.getStockLevel());
+                System.out.printf("Price: $%.2f%n", item.getPrice());
+                System.out.printf("Supplier: %s%n", item.getSupplierName());
+                System.out.printf("Date Added: %s%n", item.getDateAdded());
+                System.out.printf("Life Expectancy: %s%n", item.getLifeExpectancy());
+                boolean needsReorder = service.checkStockAndReorder(item.getId());
+                System.out.printf("Needs reorder: %b%n", needsReorder);
+                boolean nearingExpiration = item.getLifeExpectancy() != null && item.getLifeExpectancy().isBefore(now.plusMonths(2));
+                System.out.printf("Nearing expiration: %b%n", nearingExpiration);
+                System.out.println("------------------------");
+            }
 
-        System.out.println("\n=== Items in Beverages Category ===");
-        try {
+            System.out.println("\n=== Items in Beverages Category ===");
             List<InventoryItem> beverages = service.getItemsByCategory("Beverages");
-            beverages.forEach(item -> 
-                System.out.printf("%s - $%.2f%n", item.getProductName(), item.getPrice())
-            );
-        } catch (Exception e) {
-            System.err.println("Failed to get beverages: " + e.getMessage());
-        }
+            if (beverages.isEmpty()) {
+                System.out.println("No beverages found.");
+            } else {
+                beverages.forEach(item ->
+                    System.out.printf("%s - $%.2f (Expires: %s)%n", item.getProductName(), item.getPrice(), item.getLifeExpectancy())
+                );
+            }
 
-        try {
-            double totalValue = items.stream()
-                .mapToDouble(item -> item.getPrice() * item.getStockLevel())
-                .sum();
+            double totalValue = service.getTotalInventoryValue();
             System.out.printf("%nTotal Inventory Value: $%.2f%n", totalValue);
         } catch (Exception e) {
-            System.err.println("Failed to calculate total value: " + e.getMessage());
+            System.err.println("Failed to process inventory data: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -96,6 +109,7 @@ public class AiApplicationApp {
                         Thread.sleep(5000); // Wait 5 seconds before retrying
                     } catch (InterruptedException ie) {
                         Thread.currentThread().interrupt();
+                        System.err.println("Retry interrupted: " + ie.getMessage());
                     }
                 }
             }
