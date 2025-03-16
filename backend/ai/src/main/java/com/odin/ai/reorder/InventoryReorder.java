@@ -1,4 +1,4 @@
-package com.odin.ai.controller;
+package com.odin.ai.reorder;
 
 import com.odin.ai.model.InventoryItem;
 import com.odin.ai.service.InventoryService;
