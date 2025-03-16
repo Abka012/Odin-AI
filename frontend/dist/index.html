@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StockXpert - Inventory</title>
+  <link rel="stylesheet" crossorigin href="/assets/index-jem1_XSb.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="logo">StockXpert</div>
+        <ul class="nav-links">
+            <li><a href="#" onclick="showSection('home')">Home</a></li>
+            <li><a href="#" onclick="showSection('demand')">Demand Report</a></li>
+            <li><a href="#" onclick="showSection('profile')">Profile</a></li>
+            <li><button class="logout-btn" onclick="logout()">Logout</button></li>
+        </ul>
+    </nav>
+
+    <!-- Home Section (Inventory Management) -->
+    <div id="home" class="section active">
+        <div class="container">
+            <div class="controls">
+                <button class="btn" onclick="showAddProductForm()">Add Product</button>
+                <div class="sort">
+                    <button class="btn" id="sortByStock">Sort by Stock</button>
+                    <button class="btn" id="sortByName">Sort by Name</button>
+                    <button class="btn" id="sortByExpiration">Sort by Expiry</button></div>
+                
+            </div>
+
+            <!-- Add Product Form (Hidden Initially) -->
+            <div id="add-product-form" style="display: none; margin-bottom: 20px;">
+                <form onsubmit="addProduct(event)">
+                    <input type="text" id="productName" placeholder="Product Name" required>
+                    <input type="text" id="productType" placeholder="Product Type" required>
+                    <input type="number" id="stockLevel" placeholder="Stock Level" step="0.1" required>
+                    <input type="number" id="reorderThreshold" placeholder="Reorder Threshold" required>
+                    <input type="number" id="price" placeholder="Price" step="0.01" required>
+                    <input type="date" id="dateAdded" required>
+                    <input type="date" id="lifeExpectancy" required>
+                    <input type="text" id="supplierName" placeholder="Supplier" required>
+                    <input type="text" id="category" placeholder="Category" required>
+                    <button type="submit" class="btn">Save</button>
+                    <button type="button" class="btn" onclick="hideAddProductForm()">Cancel</button>
+                </form>
+            </div>
+
+            <!-- Inventory Table -->
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID #</th>
+                            <th>Product</th>
+                            <th>Stock Level</th>
+                            <th>Price</th>
+                            <th>Date Stocked</th>
+                            <th>Expiry Date</th>
+                            <th>Suppliers</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventory-table-body">
+                        <!-- Dynamically populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Demand Report Section -->
+    <div id="demand" class="section">
+        <div class="container">
+            <h1>📈 Demand Report</h1>
+            <p>Analyze real-time supply and demand trends.</p>
+            <div class="report-section">
+                <h2>Reorder List</h2>
+                <div class="table-container">
+                    <table id="reorderListTable">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Stock Level</th>
+                                <th>Reorder Threshold</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reorderListBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="report-section">
+                <h2>Supplier Scorecard</h2>
+                <div class="table-container">
+                    <table id="supplierScorecardTable">
+                        <thead>
+                            <tr>
+                                <th>Supplier</th>
+                                <th>Avg Price</th>
+                            </tr>
+                        </thead>
+                        <tbody id="supplierScorecardBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="report-section">
+                <h2>Expiration Alerts</h2>
+                <div class="table-container">
+                    <table id="expirationAlertsTable">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Expiry Date</th>
+                                <th>Days Left</th>
+                            </tr>
+                        </thead>
+                        <tbody id="expirationAlertsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="report-section">
+                <h2>Stockout Predictions</h2>
+                <div class="table-container">
+                    <table id="stockoutPredictionsTable">
+                        <thead>
+                            <tr>
+                                <th>Stock Level</th>
+                                <th>Stockout Risk</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stockoutPredictionsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Section -->
+    <div id="profile" class="section">
+        <div class="container">
+            <h1>👤 Profile</h1>
+            <p>Manage your account settings and preferences.</p>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>
