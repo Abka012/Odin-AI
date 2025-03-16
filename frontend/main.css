@@ -8,34 +8,23 @@ body {
 }
 
 /* Navbar */
-.navbar {
-    display: flex;
-    justify-content: space-between;
+
+.section {
+    display: none; /* Hide all sections initially */
+    width: 100%;
+    height: calc(100vh - 60px); /* Ensures full screen height minus navbar */
+    position: absolute;
+    top: 60px; /* Avoids navbar overlap */
+    left: 0;
     align-items: center;
-    background: #1E1E2F;
-    padding: 15px 30px;
+    justify-content: center;
+    flex-direction: column;
 }
 
-.logo {
-    font-size: 1.5em;
-    font-weight: bold;
-}
-
-.nav-links {
-    list-style: none;
+/* Show only the active section */
+.section.active {
     display: flex;
 }
-
-.nav-links li {
-    margin: 0 15px;
-}
-
-.nav-links a {
-    text-decoration: none;
-    color: white;
-    font-size: 1em;
-}
-
 /* Container */
 .container {
     padding: 20px;
@@ -83,7 +72,47 @@ th, td {
     text-align: left;
     border-bottom: 1px solid #ddd;
 }
+.navbar {
+    background-color: #2c3e50;
+    color: white;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
 
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    gap: 15px;
+    margin: 0;
+    padding: 0;
+    align-items: center; /* Vertically align the items */
+}
+
+.nav-links li {
+    display: inline;
+}
+
+.nav-links a, .logout-btn {
+    color: white;
+    text-decoration: none;
+    padding: 10px 10px;
+    background-color: #34495e;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.nav-links a:hover, .logout-btn:hover {
+    background-color: #1abc9c;
+}
 /* Product Row Hover Effect */
 .product-row {
     position: relative;
