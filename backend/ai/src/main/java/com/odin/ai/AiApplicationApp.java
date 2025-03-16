@@ -8,14 +8,15 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
+import java.util.List;
 import java.time.LocalDateTime;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @SpringBootApplication
 @EnableMongoRepositories(basePackages = "com.odin.ai.repository")
 public class AiApplicationApp {
+
     public static void main(String[] args) {
         System.out.println("Starting AiApplicationApp...");
 
@@ -27,7 +28,7 @@ public class AiApplicationApp {
         String mongoUri = dotenv.get("DATABASE_URL");
         System.out.println("Loaded DATABASE_URL: " + mongoUri);
         if (mongoUri == null) {
-            System.err.println("WARNING: DATABASE_URL not found in .env! Ensure .env is in project root or use application.properties.");
+            System.err.println("WARNING: DATABASE_URL not found in .env! Using default: mongodb://localhost:27017/retail_inventory");
         }
 
         // Set MongoDB properties before Spring starts
@@ -40,22 +41,26 @@ public class AiApplicationApp {
         ApplicationContext context;
         try {
             context = app.run(args);
+            System.out.println("Application started successfully!");
         } catch (Exception e) {
             System.err.println("Failed to start application: " + e.getMessage());
             e.printStackTrace();
             return;
         }
 
-        InventoryService service = context.getBean(InventoryService.class);
-        System.out.println("Application started successfully!");
+        // Optional: Seed test data if "--seed" argument is provided
+        if (args.length > 0 && "--seed".equals(args[0])) {
+            seedTestData(context.getBean(InventoryService.class));
+        }
+    }
 
+    private static void seedTestData(InventoryService service) {
+        System.out.println("Seeding test data...");
         LocalDateTime now = LocalDateTime.now();
 
-        System.out.println("Adding test items...");
         addItemWithRetry(service, new InventoryItem(null, "Milk", "Dairy", 10.0, 5, 999.99, now, now.plusMonths(1), "FarmFresh", "Beverages", true));
         addItemWithRetry(service, new InventoryItem(null, "Chicken", "Meat", 50.0, 10, 29.99, now, now.plusMonths(3), "MeatCo", "Protein", true));
         addItemWithRetry(service, new InventoryItem(null, "Apple Juice", "Natural Juice", 3.0, 5, 59.99, now, now.plusMonths(6), "JuiceWorks", "Beverages", true));
-        System.out.println("Test items added successfully!");
 
         System.out.println("\n=== Inventory Status ===");
         try {
@@ -75,16 +80,6 @@ public class AiApplicationApp {
                 boolean nearingExpiration = item.getLifeExpectancy() != null && item.getLifeExpectancy().isBefore(now.plusMonths(2));
                 System.out.printf("Nearing expiration: %b%n", nearingExpiration);
                 System.out.println("------------------------");
-            }
-
-            System.out.println("\n=== Items in Beverages Category ===");
-            List<InventoryItem> beverages = service.getItemsByCategory("Beverages");
-            if (beverages.isEmpty()) {
-                System.out.println("No beverages found.");
-            } else {
-                beverages.forEach(item ->
-                    System.out.printf("%s - $%.2f (Expires: %s)%n", item.getProductName(), item.getPrice(), item.getLifeExpectancy())
-                );
             }
 
             double totalValue = service.getTotalInventoryValue();

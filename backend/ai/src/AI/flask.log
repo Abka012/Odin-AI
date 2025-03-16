@@ -1,0 +1,17 @@
+Starting Flask API on port 5000...
+ * Serving Flask app 'app'
+ * Debug mode: on
+Starting Flask API on port 5000...
+Fetched inventory data: [{'productName': 'Milk', 'stockLevel': 230.0, 'reorderThreshold': 5}, {'productName': 'Chicken', 'stockLevel': 1103.0, 'reorderThreshold': 10}, {'productName': 'Apple Juice', 'stockLevel': 70.0, 'reorderThreshold': 5}]
+Fetched inventory data: [{'productName': 'Milk', 'stockLevel': 230.0, 'reorderThreshold': 5}, {'productName': 'Chicken', 'stockLevel': 1103.0, 'reorderThreshold': 10}, {'productName': 'Apple Juice', 'stockLevel': 70.0, 'reorderThreshold': 5}]
+Reorder items: []
+No items need reordering
+Fetched inventory data: [{'productName': 'Milk', 'stockLevel': 230.0, 'reorderThreshold': 5}, {'productName': 'Chicken', 'stockLevel': 1103.0, 'reorderThreshold': 10}, {'productName': 'Apple Juice', 'stockLevel': 70.0, 'reorderThreshold': 5}]
+Fetched inventory data: [{'productName': 'Milk', 'stockLevel': 230.0, 'reorderThreshold': 5}, {'productName': 'Chicken', 'stockLevel': 1103.0, 'reorderThreshold': 10}, {'productName': 'Apple Juice', 'stockLevel': 70.0, 'reorderThreshold': 5}]
+Fetched inventory data: [{'productName': 'Milk', 'stockLevel': 230.0, 'reorderThreshold': 5}, {'productName': 'Chicken', 'stockLevel': 1103.0, 'reorderThreshold': 10}, {'productName': 'Apple Juice', 'stockLevel': 70.0, 'reorderThreshold': 5}]
+Fetched inventory data: [{'productName': 'Milk', 'stockLevel': 230.0, 'reorderThreshold': 5}, {'productName': 'Chicken', 'stockLevel': 1103.0, 'reorderThreshold': 10}, {'productName': 'Apple Juice', 'stockLevel': 70.0, 'reorderThreshold': 5}]
+Reorder items: []
+No items need reordering
+Fetched inventory data: [{'productName': 'Milk', 'stockLevel': 230.0, 'reorderThreshold': 5}, {'productName': 'Chicken', 'stockLevel': 1103.0, 'reorderThreshold': 10}, {'productName': 'Apple Juice', 'stockLevel': 70.0, 'reorderThreshold': 5}]
+Fetched inventory data: [{'productName': 'Milk', 'stockLevel': 230.0, 'reorderThreshold': 5}, {'productName': 'Chicken', 'stockLevel': 1103.0, 'reorderThreshold': 10}, {'productName': 'Apple Juice', 'stockLevel': 70.0, 'reorderThreshold': 5}]
+Starting Flask API on port 5000...

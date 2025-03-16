@@ -73,6 +73,64 @@
         <div class="container">
             <h1>📈 Demand Report</h1>
             <p>Analyze real-time supply and demand trends.</p>
+            <div class="report-section">
+                <h2>Reorder List</h2>
+                <div class="table-container">
+                    <table id="reorderListTable">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Stock Level</th>
+                                <th>Reorder Threshold</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reorderListBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="report-section">
+                <h2>Supplier Scorecard</h2>
+                <div class="table-container">
+                    <table id="supplierScorecardTable">
+                        <thead>
+                            <tr>
+                                <th>Supplier</th>
+                                <th>Avg Price</th>
+                            </tr>
+                        </thead>
+                        <tbody id="supplierScorecardBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="report-section">
+                <h2>Expiration Alerts</h2>
+                <div class="table-container">
+                    <table id="expirationAlertsTable">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Expiry Date</th>
+                                <th>Days Left</th>
+                            </tr>
+                        </thead>
+                        <tbody id="expirationAlertsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="report-section">
+                <h2>Stockout Predictions</h2>
+                <div class="table-container">
+                    <table id="stockoutPredictionsTable">
+                        <thead>
+                            <tr>
+                                <th>Stock Level</th>
+                                <th>Stockout Risk</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stockoutPredictionsBody"></tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 

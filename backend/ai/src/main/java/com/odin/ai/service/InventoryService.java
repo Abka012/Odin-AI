@@ -7,9 +7,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -19,23 +22,20 @@ public class InventoryService {
     @Autowired
     private InventoryRepository inventoryRepository;
 
-    // RestTemplate for calling the Flask forecasting service
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    // Existing CRUD methods (unchanged)
     public InventoryItem addItem(InventoryItem item) {
-        // Check if an item with the same productName exists
         Optional<InventoryItem> existingItem = inventoryRepository.findByProductName(item.getProductName());
         if (existingItem.isPresent()) {
-            // Update existing item's stock level
             InventoryItem currentItem = existingItem.get();
             currentItem.setStockLevel(currentItem.getStockLevel() + item.getStockLevel());
-            return inventoryRepository.save(currentItem); // Save updated item
+            return inventoryRepository.save(currentItem);
         } else {
-            // Add new item
             return inventoryRepository.save(item);
-            }
         }
+    }
 
     public Optional<InventoryItem> getItem(String id) {
         return inventoryRepository.findById(id);
@@ -46,14 +46,13 @@ public class InventoryService {
     }
 
     public double getTotalInventoryValue() {
-        List<InventoryItem> items = inventoryRepository.findAll();
-        return items.stream()
+        return getAllItems().stream()
                 .mapToDouble(item -> item.getPrice() * item.getStockLevel())
                 .sum();
     }
 
     public List<InventoryItem> getItemsByCategory(String category) {
-        return inventoryRepository.findAll().stream()
+        return getAllItems().stream()
                 .filter(item -> item.getCategory().equalsIgnoreCase(category))
                 .collect(Collectors.toList());
     }
@@ -79,8 +78,7 @@ public class InventoryService {
         return false;
     }
 
-    public InventoryItem reduceStock(String id, double quantity) { 
-
+    public InventoryItem reduceStock(String id, double quantity) {
         Optional<InventoryItem> itemOpt = inventoryRepository.findById(id);
         if (itemOpt.isPresent()) {
             InventoryItem item = itemOpt.get();
@@ -96,10 +94,6 @@ public class InventoryService {
         throw new RuntimeException("Item not found");
     }
 
-    /**
-     * Checks if an item is nearing expiration and logs a warning.
-     * @param item The inventory item to check.
-     */
     private void checkExpiration(InventoryItem item) {
         LocalDateTime now = LocalDateTime.now();
         if (item.getLifeExpectancy() != null && item.getLifeExpectancy().isBefore(now.plusMonths(2))) {
@@ -107,33 +101,22 @@ public class InventoryService {
         }
     }
 
-    /**
-     * Retrieves the forecasted demand for a product from the Flask AI service.
-     * @param productName The name of the product to forecast demand for.
-     * @return The forecasted demand as a double, or -1 if an error occurs.
-     */
-    public double getDemandForecast(String productName) { // Changed return type to double
+    public double getDemandForecast(String productName) {
         try {
             String response = restTemplate.getForObject("http://localhost:5000/predict/" + productName, String.class);
             JsonNode jsonNode = objectMapper.readTree(response);
-            return jsonNode.get("forecastedDemand").asDouble(); // Changed to asDouble
+            return jsonNode.get("forecastedDemand").asDouble();
         } catch (Exception e) {
             System.err.println("Error fetching forecast for " + productName + ": " + e.getMessage());
-            return -1.0; // Changed to -1.0
+            return -1.0;
         }
     }
 
-    /**
-     * Optimizes the stock level for a product based on the forecasted demand.
-     * @param productName The name of the product to optimize.
-     * @return A message indicating the result of the optimization.
-     */
     public String optimizeStock(String productName) {
         double forecastedDemand = getDemandForecast(productName);
         if (forecastedDemand == -1.0) {
             return "Failed to optimize stock: Could not fetch forecast";
         }
-
         Optional<InventoryItem> itemOpt = getAllItems().stream()
                 .filter(item -> item.getProductName().equals(productName))
                 .findFirst();
@@ -149,25 +132,61 @@ public class InventoryService {
         return "Product " + productName + " not found";
     }
 
-    /**
-     * Gets items that need reordering.
-     * @return List of items below reorder threshold.
-     */
     public List<InventoryItem> getItemsNeedingReorder() {
         return getAllItems().stream()
                 .filter(item -> item.getStockLevel() <= item.getReorderThreshold())
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Gets items nearing expiration within a specified number of months.
-     * @param months The number of months to check ahead.
-     * @return List of items nearing expiration.
-     */
     public List<InventoryItem> getItemsNearingExpiration(int months) {
         LocalDateTime threshold = LocalDateTime.now().plusMonths(months);
         return getAllItems().stream()
                 .filter(item -> item.getLifeExpectancy() != null && item.getLifeExpectancy().isBefore(threshold))
                 .collect(Collectors.toList());
+    }
+
+    // ML-driven methods
+    public List<Map<String, Object>> getReorderList() {
+        try {
+            String response = restTemplate.getForObject("http://localhost:5000/reorder", String.class);
+            JsonNode jsonNode = objectMapper.readTree(response);
+            return objectMapper.convertValue(jsonNode, new TypeReference<List<Map<String, Object>>>() {});
+        } catch (Exception e) {
+            System.err.println("Error fetching reorder list: " + e.getMessage());
+            return Collections.emptyList();
+        }
+    }
+
+    public List<Map<String, Object>> getSupplierScorecard() {
+        try {
+            String response = restTemplate.getForObject("http://localhost:5000/supplier-scorecard", String.class);
+            JsonNode jsonNode = objectMapper.readTree(response);
+            return objectMapper.convertValue(jsonNode, new TypeReference<List<Map<String, Object>>>() {});
+        } catch (Exception e) {
+            System.err.println("Error fetching supplier scorecard: " + e.getMessage());
+            return Collections.emptyList();
+        }
+    }
+
+    public List<Map<String, Object>> getExpirationAlerts() {
+        try {
+            String response = restTemplate.getForObject("http://localhost:5000/expiration-alerts", String.class);
+            JsonNode jsonNode = objectMapper.readTree(response);
+            return objectMapper.convertValue(jsonNode, new TypeReference<List<Map<String, Object>>>() {});
+        } catch (Exception e) {
+            System.err.println("Error fetching expiration alerts: " + e.getMessage());
+            return Collections.emptyList();
+        }
+    }
+
+    public List<Map<String, Object>> getStockoutPredictions() {
+        try {
+            String response = restTemplate.getForObject("http://localhost:5000/predict-stockouts", String.class);
+            JsonNode jsonNode = objectMapper.readTree(response);
+            return objectMapper.convertValue(jsonNode, new TypeReference<List<Map<String, Object>>>() {});
+        } catch (Exception e) {
+            System.err.println("Error fetching stockout predictions: " + e.getMessage());
+            return Collections.emptyList();
+        }
     }
 }
