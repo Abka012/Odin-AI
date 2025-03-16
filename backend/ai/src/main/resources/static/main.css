@@ -65,19 +65,14 @@ body {
 }
 
 .section.active {
-    display: block;
+    display: flex;
 }
 
 /* Container */
 .container {
-    padding: 25px;
+    padding: 20px;
     max-width: 900px;
-    width: 90%;
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-    margin: 0 auto;
-    text-align: center;
+    margin: auto;
 }
 
 /* Controls */
@@ -85,6 +80,7 @@ body {
     display: flex;
     justify-content: space-between;
     margin-bottom: 20px;
+
 }
 
 .btn {
@@ -94,8 +90,6 @@ body {
     color: white;
     cursor: pointer;
     font-weight: bold;
-    border-radius: 6px;
-    transition: background 0.3s, transform 0.2s;
 }
 
 .btn:hover {
@@ -110,7 +104,6 @@ body {
     border-radius: 10px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     overflow-x: auto;
-    margin-top: 15px;
 }
 
 table {
@@ -128,12 +121,44 @@ th, td {
 th {
     background-color: #34495e; /* Darker header to blend with theme */
     color: white;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-tr:nth-child(even) {
-    background-color: #f9f9f9; /* Light gray for even rows */
+.logo {
+    font-size: 24px;
+    font-weight: bold;
 }
 
+.nav-links {
+    list-style: none;
+    display: flex;
+    gap: 15px;
+    margin: 0;
+    padding: 0;
+    align-items: center; /* Vertically align the items */
+}
+
+.nav-links li {
+    display: inline;
+}
+
+.nav-links a, .logout-btn {
+    color: white;
+    text-decoration: none;
+    padding: 10px 10px;
+    background-color: #34495e;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.nav-links a:hover, .logout-btn:hover {
+    background-color: #1abc9c;
+}
 /* Product Row Hover Effect */
 .product-row {
     position: relative;
