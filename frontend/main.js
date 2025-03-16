@@ -1,16 +1,20 @@
 // Show/hide sections
 function showSection(sectionId) {
+    console.log(`Showing section: ${sectionId}`);
     document.querySelectorAll('.section').forEach(section => {
         section.classList.remove('active');
     });
     document.getElementById(sectionId).classList.add('active');
+    if (sectionId === 'demand') {
+        fetchDemandReport();
+    }
 }
 
 // Load inventory on page load
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('Page loaded, fetching inventory...');
     fetchInventory();
 
-    // Add event listeners for sorting buttons
     document.getElementById('sortByStock').addEventListener('click', () => sortTable('stockLevel'));
     document.getElementById('sortByName').addEventListener('click', () => sortTable('productName'));
     document.getElementById('sortByExpiration').addEventListener('click', () => sortTable('daysUntilExpiration'));
@@ -21,6 +25,7 @@ function fetchInventory() {
     fetch('http://localhost:8080/api/inventory')
         .then(response => response.json())
         .then(items => {
+            console.log('Inventory fetched:', items);
             const tbody = document.getElementById('inventory-table-body');
             tbody.innerHTML = '';
             items.forEach(item => {
@@ -43,6 +48,133 @@ function fetchInventory() {
             });
         })
         .catch(error => console.error('Error fetching inventory:', error));
+}
+
+// Fetch and display demand report
+function fetchDemandReport() {
+    console.log('Fetching demand report...');
+    const endpoints = [
+        { url: 'reorder', bodyId: 'reorderListBody', cols: 3 },
+        { url: 'supplier-scorecard', bodyId: 'supplierScorecardBody', cols: 2 },
+        { url: 'expiration-alerts', bodyId: 'expirationAlertsBody', cols: 3 },
+        { url: 'predict-stockouts', bodyId: 'stockoutPredictionsBody', cols: 2 }
+    ];
+
+    endpoints.forEach(endpoint => {
+        fetch(`http://localhost:5000/${endpoint.url}`)
+            .then(response => response.json())
+            .then(data => {
+                console.log(`Data for ${endpoint.url}:`, data);
+                renderDemandTable(endpoint.url, endpoint.bodyId, endpoint.cols, data);
+            })
+            .catch(error => {
+                console.error(`Error fetching ${endpoint.url}:`, error);
+                renderDemandTable(endpoint.url, endpoint.bodyId, endpoint.cols, [{ error: `Failed to load ${endpoint.url.replace('-', ' ')}` }]);
+            });
+    });
+}
+
+function fetchDemandReport() {
+    console.log('Fetching demand report...');
+    const endpoints = [
+        { url: 'reorder', bodyId: 'reorderListBody', cols: 3 },
+        { url: 'supplier-scorecard', bodyId: 'supplierScorecardBody', cols: 2 },
+        { url: 'expiration-alerts', bodyId: 'expirationAlertsBody', cols: 3 },
+        { url: 'predict-stockouts', bodyId: 'stockoutPredictionsBody', cols: 2 }
+    ];
+
+    endpoints.forEach(endpoint => {
+        fetch(`http://localhost:5000/${endpoint.url}`)
+            .then(response => {
+                console.log(`Response status for ${endpoint.url}: ${response.status}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log(`Data for ${endpoint.url}:`, data);
+                renderDemandTable(endpoint.url, endpoint.bodyId, endpoint.cols, data);
+            })
+            .catch(error => {
+                console.error(`Fetch error for ${endpoint.url}:`, error);
+                renderDemandTable(endpoint.url, endpoint.bodyId, endpoint.cols, [{ error: `Failed to load ${endpoint.url.replace('-', ' ')}: ${error.message}` }]);
+            });
+    });
+}
+
+function renderDemandTable(endpoint, bodyId, colspan, data) {
+    console.log(`Rendering ${endpoint} into ${bodyId} with data:`, data);
+    const tbody = document.getElementById(bodyId);
+    if (!tbody) {
+        console.error(`Table body ${bodyId} not found in DOM`);
+        return;
+    }
+    tbody.innerHTML = ''; // Clear previous content
+
+    if (!data || data.length === 0) {
+        console.log(`No data for ${endpoint}, showing 'No data' message`);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td colspan="${colspan}" class="no-data">No ${endpoint.replace('-', ' ')} available</td>`;
+        tbody.appendChild(tr);
+        return;
+    }
+
+    if (data[0]?.error) {
+        console.log(`Error detected in data for ${endpoint}: ${data[0].error}`);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td colspan="${colspan}" class="error">${data[0].error}</td>`;
+        tbody.appendChild(tr);
+        return;
+    }
+
+    switch (endpoint) {
+        case 'reorder':
+            data.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${item.productName || 'N/A'}</td>
+                    <td>${item.stockLevel || 'N/A'}</td>
+                    <td>${item.reorderThreshold || 'N/A'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+            break;
+        case 'supplier-scorecard':
+            data.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${item.supplierName || 'N/A'}</td>
+                    <td>$${item.price ? item.price.toFixed(2) : 'N/A'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+            break;
+        case 'expiration-alerts':
+            data.forEach(item => {
+                const expiryDate = new Date(item.lifeExpectancy);
+                const now = new Date();
+                const daysLeft = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${item.productName || 'N/A'}</td>
+                    <td>${expiryDate.toLocaleDateString() || 'N/A'}</td>
+                    <td class="${daysLeft < 30 ? 'urgent' : ''}">${daysLeft || 'N/A'} days</td>
+                `;
+                tbody.appendChild(tr);
+            });
+            break;
+        case 'predict-stockouts':
+            data.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${item.stockLevel || 'N/A'}</td>
+                    <td class="${item.predictedStockout ? 'urgent' : ''}">${item.predictedStockout ? 'High Risk' : 'Low Risk'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+            break;
+    }
 }
 
 // Show Add Product Form
@@ -206,26 +338,23 @@ function sortTable(sortBy = 'stockLevel') {
     fetch('http://localhost:8080/api/inventory')
         .then(response => response.json())
         .then(items => {
-            // Add daysUntilExpiration to each item
             const today = new Date();
             items.forEach(item => {
                 const expirationDate = new Date(item.lifeExpectancy);
                 const timeDiff = expirationDate - today;
-                item.daysUntilExpiration = Math.ceil(timeDiff / (1000 * 60 * 60 * 24)); // Convert ms to days
+                item.daysUntilExpiration = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
             });
 
-            // Sort based on the specified field
             items.sort((a, b) => {
                 if (sortBy === 'productName') {
-                    return a.productName.localeCompare(b.productName); // Alphabetical sort
+                    return a.productName.localeCompare(b.productName);
                 } else if (sortBy === 'daysUntilExpiration') {
-                    return a.daysUntilExpiration - b.daysUntilExpiration; // Numeric sort (ascending)
+                    return a.daysUntilExpiration - b.daysUntilExpiration;
                 } else {
-                    return a.stockLevel - b.stockLevel; // Default: stockLevel (ascending)
+                    return a.stockLevel - b.stockLevel;
                 }
             });
 
-            // Update the table
             const tbody = document.getElementById('inventory-table-body');
             tbody.innerHTML = '';
             items.forEach(item => {
@@ -252,5 +381,5 @@ function sortTable(sortBy = 'stockLevel') {
 
 // Logout (Placeholder)
 function logout() {
-    alert('Logout functionality to be implemented');
+    window.location.href = "login.html";
 }
