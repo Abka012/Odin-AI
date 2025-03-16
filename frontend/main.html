@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="main.css">
 </head>
 <body>
-
     <!-- Navbar -->
     <nav class="navbar">
         <div class="logo">StockXpert</div>
@@ -23,8 +22,29 @@
     <div id="home" class="section active">
         <div class="container">
             <div class="controls">
-                <button class="btn">Add Product</button>
-                <button class="btn">Sort</button>
+                <button class="btn" onclick="showAddProductForm()">Add Product</button>
+                <div class="sort">
+                    <button class="btn" id="sortByStock">Sort by Stock</button>
+                    <button class="btn" id="sortByName">Sort by Name</button>
+                    <button class="btn" id="sortByExpiration">Sort by Expiry</button></div>
+                
+            </div>
+
+            <!-- Add Product Form (Hidden Initially) -->
+            <div id="add-product-form" style="display: none; margin-bottom: 20px;">
+                <form onsubmit="addProduct(event)">
+                    <input type="text" id="productName" placeholder="Product Name" required>
+                    <input type="text" id="productType" placeholder="Product Type" required>
+                    <input type="number" id="stockLevel" placeholder="Stock Level" step="0.1" required>
+                    <input type="number" id="reorderThreshold" placeholder="Reorder Threshold" required>
+                    <input type="number" id="price" placeholder="Price" step="0.01" required>
+                    <input type="date" id="dateAdded" required>
+                    <input type="date" id="lifeExpectancy" required>
+                    <input type="text" id="supplierName" placeholder="Supplier" required>
+                    <input type="text" id="category" placeholder="Category" required>
+                    <button type="submit" class="btn">Save</button>
+                    <button type="button" class="btn" onclick="hideAddProductForm()">Cancel</button>
+                </form>
             </div>
 
             <!-- Inventory Table -->
@@ -42,33 +62,8 @@
                             <th>Actions</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr class="product-row">
-                            <td>001</td>
-                            <td>Milk</td>
-                            <td>10</td>
-                            <td>$2.50</td>
-                            <td>2025-03-10</td>
-                            <td>2025-04-10</td>
-                            <td>Supplier A</td>
-                            <td class="actions">
-                                <button class="edit-btn">Edit</button>
-                                <button class="delete-btn">Delete</button>
-                            </td>
-                        </tr>
-                        <tr class="product-row">
-                            <td>002</td>
-                            <td>Bread</td>
-                            <td>5</td>
-                            <td>$1.20</td>
-                            <td>2025-03-12</td>
-                            <td>2025-03-22</td>
-                            <td>Supplier B</td>
-                            <td class="actions">
-                                <button class="edit-btn">Edit</button>
-                                <button class="delete-btn">Delete</button>
-                            </td>
-                        </tr>
+                    <tbody id="inventory-table-body">
+                        <!-- Dynamically populated by JS -->
                     </tbody>
                 </table>
             </div>

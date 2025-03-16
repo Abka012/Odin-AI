@@ -252,5 +252,5 @@ function sortTable(sortBy = 'stockLevel') {
 
 // Logout (Placeholder)
 function logout() {
-    alert('Logout functionality to be implemented');
+    window.location.href = "login.html";
 }

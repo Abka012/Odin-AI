@@ -24,12 +24,17 @@ body {
 /* Show only the active section */
 .section.active {
     display: flex;
+    
 }
 /* Container */
 .container {
+    width: 100%;
     padding: 20px;
     max-width: 900px;
     margin: auto;
+    margin-top: 50px;
+    
+    
 }
 
 /* Controls */
@@ -37,6 +42,7 @@ body {
     display: flex;
     justify-content: space-between;
     margin-bottom: 20px;
+
 }
 
 .btn {
@@ -46,6 +52,7 @@ body {
     color: white;
     cursor: pointer;
     font-weight: bold;
+    border-radius: 5px;
 }
 
 .btn:hover {
@@ -59,6 +66,7 @@ body {
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     overflow-x: auto;
+
 }
 
 table {
@@ -82,8 +90,9 @@ th, td {
 }
 
 .logo {
-    font-size: 24px;
+    font-size: 30px;
     font-weight: bold;
+
 }
 
 .nav-links {
