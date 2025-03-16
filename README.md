@@ -17,8 +17,7 @@ Navigate to backend/ai/src/AI and run the following command within your terminal
 ```
 pip install -r requirements.txt
 ```
-until finished
-```
+
 ## Built With
 
 * [Spring](https://start.spring.io/) - The backend framework used
