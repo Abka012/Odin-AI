@@ -26,7 +26,7 @@ public class InventoryItem {
     private String productType;
 
     @Positive(message = "Stock level must be positive")
-    private double stockLevel; // Kept as double as per your update
+    private double stockLevel; 
 
     @Positive(message = "Reorder threshold must be positive")
     private int reorderThreshold;
