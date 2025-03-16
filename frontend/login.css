@@ -17,7 +17,7 @@ body {
     border-radius: 10px;
     text-align: center;
     width: 350px;
-    box-shadow: 0px 5px 15px rgb(81, 46, 255);
+    box-shadow: 0px 5px 15px #A96BFF;
     animation: fadeIn 0.8s ease-in-out;
 }
 

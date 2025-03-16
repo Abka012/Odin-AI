@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StockXpert - Inventory</title>
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="logo">StockXpert</div>
+        <ul class="nav-links">
+            <li><a href="#">Home</a></li>
+            <li><a href="#">Demand Report</a></li>
+            <li><a href="#">Profile</a></li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="controls">
+            <button class="btn">Add Product</button>
+            <button class="btn">Sort</button>
+        </div>
+
+        <!-- Inventory Table -->
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID #</th>
+                        <th>Product</th>
+                        <th>Stock Level</th>
+                        <th>Price</th>
+                        <th>Date Stocked</th>
+                        <th>Expiry Date</th>
+                        <th>Suppliers</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="product-row">
+                        <td>001</td>
+                        <td>Milk</td>
+                        <td>10</td>
+                        <td>$2.50</td>
+                        <td>2025-03-10</td>
+                        <td>2025-04-10</td>
+                        <td>Supplier A</td>
+                        <td class="actions">
+                            <button class="edit-btn">Edit</button>
+                            <button class="delete-btn">Delete</button>
+                        </td>
+                    </tr>
+                    <tr class="product-row">
+                        <td>002</td>
+                        <td>Bread</td>
+                        <td>5</td>
+                        <td>$1.20</td>
+                        <td>2025-03-12</td>
+                        <td>2025-03-22</td>
+                        <td>Supplier B</td>
+                        <td class="actions">
+                            <button class="edit-btn">Edit</button>
+                            <button class="delete-btn">Delete</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
