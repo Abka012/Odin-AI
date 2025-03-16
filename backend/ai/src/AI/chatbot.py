@@ -10,6 +10,8 @@ import json
 import pickle
 import nltk 
 from nltk.stem.lancaster import LancasterStemmer
+import google.generativeai as genai
+from dotenv import load_dotenv
 
 stemmer = LancasterStemmer() #Creates an instance of Lancaster Stemmer 
  
@@ -101,13 +103,70 @@ except Exception as e:
     model.save("model.keras")
     #model.summary()
 
+load_dotenv()
+
+genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
+
 ## Get Stock Quantity from Product Name
-def get_stock_quantity(df, product_name):
+def get_stock_info(df, product_name):
     result = df[df['Product_Name'].str.lower() == product_name.lower()]
     if not result.empty:
-        return result.iloc[0]['Stock_Quantity']
+        product_name = result.iloc[0]['Product_Name']
+        stock_quantity = result.iloc[0]['Stock_Quantity']
+        sales_volume = result.iloc[0]['Sales_Volume']
+        return product_name, stock_quantity, sales_volume
     else:
-        return "Product not found"
+        return "Product not found", "N/A"
+    
+def get_recommendations(df, product_name):
+    product, stock, sales = get_stock_info(df, product_name)
+
+    generation_config = {
+    "temperature":0.7,                  
+    "top_p":0.9,                        
+    "top_k":40,                          
+    "max_output_tokens":5000,            
+    "response_mime_type":"text/plain"   
+    }
+
+    system_instruction = f"""
+    You are a restocking assistant AI. Your task is to:
+    1. Analyze the current stock levels and sales volume of a food item.
+    2. Recommend if the restock order quantity should increase or decrease based on the stock-to-sales ratio.
+    3. Provide recommendations on optimal order quantities to prevent shortages or overstocking.
+    4. Consider any special factors such as upcoming promotions or seasonal demand.
+
+    When responding:
+    - Be concise yet informative.
+    - Provide clear suggestions based on data analysis.
+    - Use simple language for general users but include necessary details for more advanced inquiries.
+    - Format responses with bullet points or tables where applicable for clarity.
+    """
+
+    model = genai.GenerativeModel(
+    model_name="gemini-2.0-flash",
+    generation_config=generation_config, 
+    system_instruction=system_instruction
+    )
+
+    chat = model.start_chat(history=[])
+
+    if not product:
+        pass
+    query = f"""
+        Based on the {stock} and {sales} for {product}, it is recommended that:
+
+        Please provide:
+        - An assessment of the current stock and sales volume.
+        - Recommendations on whether the restock order quantity should increase or decrease.
+        - A structured table with recommended restock quantities based on sales trends and stock levels.
+        """
+    response = chat.send_message(query)
+
+    chat.history.append({"role": "user", "parts": [product_name]})
+    chat.history.append({"role": "model", "parts": [response]})
+
+    print(response.text)
 
 # Chat Function
 def chat():
@@ -117,7 +176,6 @@ def chat():
         inp = input("You: ")
         if inp.lower() == "quit":
             break
-        stock_quantity = get_stock_quantity(df, inp)
-        print(f"Stock Quantity: {stock_quantity}\n")
+        get_recommendations(df, inp)
 
 chat()
