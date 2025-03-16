@@ -3,82 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StockXpert - Inventory</title>
+    <title>StockXpert - Inventory Management</title>
     <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <!-- Navbar -->
-    <nav class="navbar">
-        <div class="logo">StockXpert</div>
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+        <div class="logo">
+            <i class="fas fa-warehouse"></i> StockXpert
+        </div>
+        <button class="sidebar-toggle" onclick="toggleSidebar()">
+            <i class="fas fa-bars"></i>
+        </button>
         <ul class="nav-links">
-            <li><a href="#" onclick="showSection('home')">Home</a></li>
-            <li><a href="#" onclick="showSection('demand')">Demand Report</a></li>
-            <li><a href="#" onclick="showSection('profile')">Profile</a></li>
-            <li><button class="logout-btn" onclick="logout()">Logout</button></li>
+            <li><a href="#" onclick="showSection('home')" class="active"><i class="fas fa-home"></i> Home</a></li>
+            <li class="dropdown">
+                <a href="#" onclick="toggleDropdown(event)"><i class="fas fa-chart-line"></i> Demand Report <i class="fas fa-caret-down"></i></a>
+                <ul class="dropdown-menu">
+                    <li><a href="#" onclick="showSection('reorder'); event.preventDefault();"><i class="fas fa-list"></i> Reorder List</a></li>
+                    <li><a href="#" onclick="showSection('supplier'); event.preventDefault();"><i class="fas fa-users"></i> Supplier Scorecard</a></li>
+                    <li><a href="#" onclick="showSection('expiration'); event.preventDefault();"><i class="fas fa-clock"></i> Expiration Alerts</a></li>
+                    <li><a href="#" onclick="showSection('stockout'); event.preventDefault();"><i class="fas fa-exclamation-triangle"></i> Stockout Predictions</a></li>
+                    <li><a href="#" onclick="showSection('recommendations'); event.preventDefault();"><i class="fas fa-robot"></i> Restocking Recommendations</a></li>
+                </ul>
+            </li>
+            <li><a href="#" onclick="showSection('profile')"><i class="fas fa-user"></i> Profile</a></li>
+            <li><a href="#" class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>
     </nav>
 
-    <!-- Home Section (Inventory Management) -->
-    <div id="home" class="section active">
-        <div class="container">
-            <div class="controls">
-                <button class="btn" onclick="showAddProductForm()">Add Product</button>
-                <div class="sort">
-                    <button class="btn" id="sortByStock">Sort by Stock</button>
-                    <button class="btn" id="sortByName">Sort by Name</button>
-                    <button class="btn" id="sortByExpiration">Sort by Expiry</button></div>
-                
-            </div>
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <header class="content-header">
+            <h2 id="section-title">Inventory Management</h2>
+        </header>
 
-            <!-- Add Product Form (Hidden Initially) -->
-            <div id="add-product-form" style="display: none; margin-bottom: 20px;">
-                <form onsubmit="addProduct(event)">
-                    <input type="text" id="productName" placeholder="Product Name" required>
-                    <input type="text" id="productType" placeholder="Product Type" required>
-                    <input type="number" id="stockLevel" placeholder="Stock Level" step="0.1" required>
-                    <input type="number" id="reorderThreshold" placeholder="Reorder Threshold" required>
-                    <input type="number" id="price" placeholder="Price" step="0.01" required>
-                    <input type="date" id="dateAdded" required>
-                    <input type="date" id="lifeExpectancy" required>
-                    <input type="text" id="supplierName" placeholder="Supplier" required>
-                    <input type="text" id="category" placeholder="Category" required>
-                    <button type="submit" class="btn">Save</button>
-                    <button type="button" class="btn" onclick="hideAddProductForm()">Cancel</button>
-                </form>
-            </div>
+        <div id="home" class="section active">
+            <div class="container">
+                <div class="controls">
+                    <button class="btn" onclick="showAddProductForm()"><i class="fas fa-plus"></i> Add Product</button>
+                    <button class="btn" id="sortByStock"><i class="fas fa-sort-numeric-down"></i> Sort by Stock</button>
+                    <button class="btn" id="sortByName"><i class="fas fa-sort-alpha-down"></i> Sort by Name</button>
+                    <button class="btn" id="sortByExpiration"><i class="fas fa-sort-amount-down"></i> Sort by Expiry</button>
+                </div>
 
-            <!-- Inventory Table -->
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID #</th>
-                            <th>Product</th>
-                            <th>Stock Level</th>
-                            <th>Price</th>
-                            <th>Date Stocked</th>
-                            <th>Expiry Date</th>
-                            <th>Suppliers</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="inventory-table-body">
-                        <!-- Dynamically populated by JS -->
-                    </tbody>
-                </table>
+                <!-- Add Product Form -->
+                <div id="add-product-form" class="form-container" style="display: none;">
+                    <form onsubmit="addProduct(event)">
+                        <div class="form-group">
+                            <label for="productName">Product Name</label>
+                            <input type="text" id="productName" placeholder="Enter product name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="productType">Product Type</label>
+                            <input type="text" id="productType" placeholder="Enter product type" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="stockLevel">Stock Level</label>
+                            <input type="number" id="stockLevel" placeholder="Enter stock level" step="0.1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="reorderThreshold">Reorder Threshold</label>
+                            <input type="number" id="reorderThreshold" placeholder="Enter threshold" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="price">Price</label>
+                            <input type="number" id="price" placeholder="Enter price" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="supplierName">Supplier</label>
+                            <input type="text" id="supplierName" placeholder="Enter supplier" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="dateAdded">Date Stocked</label>
+                            <input type="date" id="dateAdded" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="lifeExpectancy">Expiry Date</label>
+                            <input type="date" id="lifeExpectancy" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="category">Category</label>
+                            <input type="text" id="category" placeholder="Enter category" required>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn"><i class="fas fa-save"></i> Save</button>
+                            <button type="button" class="btn cancel" onclick="hideAddProductForm()"><i class="fas fa-times"></i> Cancel</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Inventory Table -->
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID #</th>
+                                <th>Product</th>
+                                <th>Stock Level</th>
+                                <th>Price</th>
+                                <th>Date Stocked</th>
+                                <th>Expiry Date</th>
+                                <th>Suppliers</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventory-table-body"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Demand Report Section -->
-    <div id="demand" class="section">
-        <div class="container">
-            <h1>📈 Demand Report</h1>
-            <p>Analyze real-time supply and demand trends.</p>
-            <div class="report-section">
-                <h2>Reorder List</h2>
+        <!-- Demand Report Sections -->
+        <div id="reorder" class="section">
+            <div class="container">
                 <div class="table-container">
-                    <table id="reorderListTable">
+                    <table>
                         <thead>
                             <tr>
                                 <th>Product</th>
@@ -90,10 +131,12 @@
                     </table>
                 </div>
             </div>
-            <div class="report-section">
-                <h2>Supplier Scorecard</h2>
+        </div>
+
+        <div id="supplier" class="section">
+            <div class="container">
                 <div class="table-container">
-                    <table id="supplierScorecardTable">
+                    <table>
                         <thead>
                             <tr>
                                 <th>Supplier</th>
@@ -104,10 +147,12 @@
                     </table>
                 </div>
             </div>
-            <div class="report-section">
-                <h2>Expiration Alerts</h2>
+        </div>
+
+        <div id="expiration" class="section">
+            <div class="container">
                 <div class="table-container">
-                    <table id="expirationAlertsTable">
+                    <table>
                         <thead>
                             <tr>
                                 <th>Product</th>
@@ -119,10 +164,12 @@
                     </table>
                 </div>
             </div>
-            <div class="report-section">
-                <h2>Stockout Predictions</h2>
+        </div>
+
+        <div id="stockout" class="section">
+            <div class="container">
                 <div class="table-container">
-                    <table id="stockoutPredictionsTable">
+                    <table>
                         <thead>
                             <tr>
                                 <th>Stock Level</th>
@@ -134,13 +181,37 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Profile Section -->
-    <div id="profile" class="section">
-        <div class="container">
-            <h1>👤 Profile</h1>
-            <p>Manage your account settings and preferences.</p>
+        <div id="recommendations" class="section">
+            <div class="container">
+                <h1>Restocking Recommendations</h1>
+                <p>AI-driven restocking suggestions.</p>
+                <div class="input-container">
+                    <form onsubmit="fetchRecommendation(event)">
+                        <input type="text" id="recommendationInput" placeholder="Enter product name" required>
+                        <button type="submit" class="btn"><i class="fas fa-search"></i> Get Recommendation</button>
+                    </form>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Recommendation</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recommendationsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Section -->
+        <div id="profile" class="section">
+            <div class="container">
+                <p>Manage your account settings and preferences.</p>
+                <!-- Add profile content here -->
+            </div>
         </div>
     </div>
 

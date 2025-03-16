@@ -1,9 +1,19 @@
-from flask import Flask, jsonify, Response
+from flask import Flask, jsonify, Response, request
+from flask_cors import CORS
 import pandas as pd
 import requests
 from datetime import datetime
+from chatbot import get_recommendations  # Import from chatbot.py
+from dotenv import load_dotenv
+import os
+import google.generativeai as genai
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
+
+# Load environment variables
+load_dotenv()
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 def fetch_inventory_data():
     try:
@@ -71,7 +81,7 @@ Stockout Predictions
 """
     return Response(report, mimetype="text/plain")
 
-# Existing JSON endpoints unchanged
+# Existing JSON endpoints
 @app.route("/reorder", methods=["GET"])
 def get_reorder_list():
     df = fetch_inventory_data()
@@ -105,6 +115,20 @@ def predict_stockouts_api():
     df['predictedStockout'] = df['stockLevel'] < 10
     return jsonify(df[['stockLevel', 'predictedStockout']].to_dict(orient="records"))
 
+# New endpoint for Restocking Recommendations
+@app.route("/recommendation", methods=["GET"])
+def recommendation():
+    product_name = request.args.get('product', '')
+    if not product_name:
+        return jsonify({'error': 'Product name is required'}), 400
+    
+    try:
+        recommendation_text = get_recommendations(product_name)
+        return jsonify({'recommendation': recommendation_text})
+    except Exception as e:
+        print(f"Error generating recommendation: {e}")
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == "__main__":
     print("Starting Flask API on port 5000...")
-    app.run(debug=True, port=5000)
+    app.run(host="0.0.0.0", port=5000, debug=True)

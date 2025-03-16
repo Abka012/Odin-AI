@@ -4,6 +4,7 @@ import com.odin.ai.model.InventoryItem;
 import com.odin.ai.repository.InventoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,15 +26,19 @@ public class InventoryService {
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    // Existing CRUD methods (unchanged)
+    @Transactional
     public InventoryItem addItem(InventoryItem item) {
         Optional<InventoryItem> existingItem = inventoryRepository.findByProductName(item.getProductName());
         if (existingItem.isPresent()) {
             InventoryItem currentItem = existingItem.get();
             currentItem.setStockLevel(currentItem.getStockLevel() + item.getStockLevel());
-            return inventoryRepository.save(currentItem);
+            InventoryItem updatedItem = inventoryRepository.save(currentItem);
+            System.out.println("Updated existing item: " + updatedItem);
+            return updatedItem;
         } else {
-            return inventoryRepository.save(item);
+            InventoryItem savedItem = inventoryRepository.save(item);
+            System.out.println("Saved new item: " + savedItem);
+            return savedItem;
         }
     }
 
@@ -101,6 +106,14 @@ public class InventoryService {
         }
     }
 
+    public List<InventoryItem> getItemsNearingExpiration(int months) {
+        LocalDateTime threshold = LocalDateTime.now().plusMonths(months);
+        return getAllItems().stream()
+                .filter(item -> item.getLifeExpectancy() != null && item.getLifeExpectancy().isBefore(threshold))
+                .collect(Collectors.toList());
+    }
+
+    // Added Missing Methods
     public double getDemandForecast(String productName) {
         try {
             String response = restTemplate.getForObject("http://localhost:5000/predict/" + productName, String.class);
@@ -108,7 +121,7 @@ public class InventoryService {
             return jsonNode.get("forecastedDemand").asDouble();
         } catch (Exception e) {
             System.err.println("Error fetching forecast for " + productName + ": " + e.getMessage());
-            return -1.0;
+            return -1.0; // Indicates error as per controller
         }
     }
 
@@ -138,14 +151,7 @@ public class InventoryService {
                 .collect(Collectors.toList());
     }
 
-    public List<InventoryItem> getItemsNearingExpiration(int months) {
-        LocalDateTime threshold = LocalDateTime.now().plusMonths(months);
-        return getAllItems().stream()
-                .filter(item -> item.getLifeExpectancy() != null && item.getLifeExpectancy().isBefore(threshold))
-                .collect(Collectors.toList());
-    }
-
-    // ML-driven methods
+    // ML-driven Methods (Already Present)
     public List<Map<String, Object>> getReorderList() {
         try {
             String response = restTemplate.getForObject("http://localhost:5000/reorder", String.class);

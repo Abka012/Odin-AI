@@ -26,7 +26,7 @@ public class InventoryItem {
     private String productType;
 
     @Positive(message = "Stock level must be positive")
-    private double stockLevel; 
+    private double stockLevel;
 
     @Positive(message = "Reorder threshold must be positive")
     private int reorderThreshold;
@@ -34,8 +34,10 @@ public class InventoryItem {
     @Positive(message = "Price must be positive")
     private double price;
 
+    @NotNull(message = "Date added cannot be null")
     private LocalDateTime dateAdded;
 
+    @NotNull(message = "Life expectancy cannot be null")
     private LocalDateTime lifeExpectancy;
 
     @NotNull(message = "Supplier name cannot be null")

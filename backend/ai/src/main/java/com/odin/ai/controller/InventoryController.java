@@ -46,15 +46,12 @@ public class InventoryController {
     }
 
     @PostMapping
-    public ResponseEntity<Map<String, Object>> addItem(@Valid @RequestBody InventoryItem item) {
+    public ResponseEntity<InventoryItem> addItem(@Valid @RequestBody InventoryItem item) {
         System.out.println("Received item: " + item);
         InventoryItem savedItem = inventoryService.addItem(item);
-        Map<String, Object> response = new HashMap<>();
-        response.put("item", savedItem);
-        response.put("message", savedItem.getStockLevel() > 0 ? "New item added" : "Item stock updated");
-        return ResponseEntity.ok(response); // Matches addProduct response expectation
+        System.out.println("Saved item: " + savedItem); // Debug: Confirm save
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedItem);
     }
-
     @PutMapping("/{id}")
     public ResponseEntity<InventoryItem> updateItem(@PathVariable String id, @Valid @RequestBody InventoryItem item) {
         System.out.println("Updating item with ID: " + id + " to: " + item);

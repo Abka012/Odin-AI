@@ -1,181 +1,100 @@
-#Import Libraries
-import numpy as np
 import os
-import pandas as pd
-import tensorflow
-from tensorflow.keras import layers, models 
-from tensorflow.keras.models import load_model 
-import random 
-import json 
-import pickle
-import nltk 
-from nltk.stem.lancaster import LancasterStemmer
+import requests
 import google.generativeai as genai
-from dotenv import load_dotenv
 
-stemmer = LancasterStemmer() #Creates an instance of Lancaster Stemmer 
- 
-# Load dataset from CSV
-def read_data_set():
-    filepath = os.path.join(os.getcwd(), 'grocery_dataset.csv')
-    df = pd.read_csv(filepath)
-    return df
+# Configure Gemini API with your key
+genai.configure(api_key='AIzaSyCpklPbv061VuVYX08zKyGQ-WJjCRd90LM')
 
-# Read and process training data from CSV
-def process_data_from_csv(file_name):
-    df = read_data_set(file_name)
-    words = []
-    labels = []
-    docs_x = []
-    docs_y = []
+# Fetch inventory data from Spring Boot API
+def fetch_inventory_data():
+    url = 'http://localhost:8080/api/inventory'
+    try:
+        response = requests.get(url)
+        response.raise_for_status()  # Raise exception for bad status codes
+        return response.json()  # List of inventory items
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching inventory from API: {str(e)}")
+        return []
+
+# Get stock info from product name using API data
+def get_stock_info(inventory_data, product_name):
+    if not inventory_data:
+        return "Product not found", "N/A", "N/A", "N/A"
     
-    for _, row in df.iterrows():
-        wrds = nltk.word_tokenize(row['pattern'])
-        words.extend(wrds)
-        docs_x.append(wrds)
-        docs_y.append(row['tag'])
+    # Search for product in the API response
+    for item in inventory_data:
+        if item.get('productName', '').lower() == product_name.lower():
+            return (item['productName'], 
+                    item.get('stockLevel', 'N/A'), 
+                    item.get('salesVolume', 'N/A'),  # Adjust if your model differs
+                    item.get('lifeExpectancy', 'N/A'))
+    return "Product not found", "N/A", "N/A", "N/A"
 
-        if row['tag'] not in labels:
-            labels.append(row['tag'])
-    
-    words = [stemmer.stem(w.lower()) for w in words if w != "?"]
-    words = sorted(list(set(words)))
-    labels = sorted(labels)
-    
-    training = []
-    output = []
-    out_empty = [0 for _ in range(len(labels))]
-    
-    for x, doc in enumerate(docs_x):
-        bag = []
-        wrds = [stemmer.stem(w) for w in doc]
-        
-        for w in words:
-            if w in wrds:
-                bag.append(1)
-            else:
-                bag.append(0)
-        
-        output_row = out_empty[:]
-        output_row[labels.index(docs_y[x])] = 1
-        
-        training.append(bag)
-        output.append(output_row)
-    
-    training = np.array(training)
-    output = np.array(output)
-    
-    with open("data.pickle", "wb") as f:
-        pickle.dump((words, labels, training, output), f)
-    
-    return words, labels, training, output
+# Get recommendation for a product
+def get_recommendations(product_name):
+    inventory_data = fetch_inventory_data()
+    product, stock, sales, life_expectancy = get_stock_info(inventory_data, product_name)
 
-# Load and train model using CSV data
-try:
-    with open("data.pickle", "rb") as f:
-        words, labels, training, output = pickle.load(f)
-except Exception as e:
-    print(f"Error loading data: {e}")
-    words, labels, training, output = process_data_from_csv("training_data.csv")
-
-
-tensorflow.keras.backend.clear_session()
-
-#Creates neural network model 
-model = models.Sequential()
-model.add(layers.Input(shape=(46,)))
-model.add(layers.Dense(32, activation='relu'))
-model.add(layers.Dense(16, activation='relu'))
-model.add(layers.Dense(6, activation='softmax'))
-
-#Save and load model
-try:
-    model = load_model("model.keras")
-
-except Exception as e:
-    print(f"Error loading model: {e}")
-    
-    model.compile(optimizer='adam',
-                loss='categorical_crossentropy',
-                metrics=['accuracy'])
-
-    model.fit(training, output, epochs=1000, batch_size=8)
-    model.save("model.keras")
-    #model.summary()
-
-load_dotenv()
-
-genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
-
-## Get Stock Quantity from Product Name
-def get_stock_info(df, product_name):
-    result = df[df['Product_Name'].str.lower() == product_name.lower()]
-    if not result.empty:
-        product_name = result.iloc[0]['Product_Name']
-        stock_quantity = result.iloc[0]['Stock_Quantity']
-        sales_volume = result.iloc[0]['Sales_Volume']
-        return product_name, stock_quantity, sales_volume
-    else:
-        return "Product not found", "N/A"
-    
-def get_recommendations(df, product_name):
-    product, stock, sales = get_stock_info(df, product_name)
+    # Convert stock and sales to numeric for comparison
+    try:
+        stock = float(stock) if stock != "N/A" else 0
+        sales = float(sales) if sales != "N/A" else 0
+    except ValueError:
+        stock, sales = 0, 0
 
     generation_config = {
-    "temperature":0.7,                  
-    "top_p":0.9,                        
-    "top_k":40,                          
-    "max_output_tokens":5000,            
-    "response_mime_type":"text/plain"   
+        "temperature": 0.7,
+        "top_p": 0.9,
+        "top_k": 40,
+        "max_output_tokens": 5000,
+        "response_mime_type": "text/plain"
     }
 
-    system_instruction = f"""
-    You are a restocking assistant AI. Your task is to:
+    system_instruction = """
+    You are a restocking Inventory assistant AI. Your task is to:
     1. Analyze the current stock levels and sales volume of a food item.
     2. Recommend if the restock order quantity should increase or decrease based on the stock-to-sales ratio.
     3. Provide recommendations on optimal order quantities to prevent shortages or overstocking.
     4. Consider any special factors such as upcoming promotions or seasonal demand.
 
     When responding:
-    - Be concise yet informative.
-    - Provide clear suggestions based on data analysis.
+    - Be concise yet informative, Keep points 1 sentence short.
+    - Provide clear suggestions to the business owner/manager based on data analysis.
     - Use simple language for general users but include necessary details for more advanced inquiries.
-    - Format responses with bullet points or tables where applicable for clarity.
+    - Format responses with bullet points where applicable for clarity.
+    - Make respone plan text 2.0 line spacing.
+    - Use only letters and numbers when responding, No asteriks, numerous dashes etc.
     """
 
-    model = genai.GenerativeModel(
-    model_name="gemini-2.0-flash",
-    generation_config=generation_config, 
-    system_instruction=system_instruction
-    )
+    try:
+        model = genai.GenerativeModel(
+            model_name="gemini-1.5-flash",
+            generation_config=generation_config,
+            system_instruction=system_instruction
+        )
+        chat = model.start_chat(history=[])
 
-    chat = model.start_chat(history=[])
+        if product == "Product not found":
+            response_text = f"No data available for {product_name}."
+        else:
+            query = f"""
+            Based on the stock level of {stock}, sales volume of {sales}, and life expectancy of {life_expectancy} for {product}, provide:
+            - An assessment of the current stock, sales volume, and remaining shelf life.
+            - Recommendations on whether the restock order quantity should increase or decrease.
+            - A structured table with recommended restock quantities based on sales trends, stock levels, and expiration dates.
+            """
+            response = chat.send_message(query)
+            response_text = response.text
 
-    if not product:
-        pass
-    query = f"""
-        Based on the {stock} and {sales} for {product}, it is recommended that:
+            # Log stock status to console instead of sending WhatsApp
+            if stock <= sales and stock != 0:
+                print(f"Low stock alert for {product}: Stock ({stock}) <= Sales ({sales})")
+            else:
+                print(f"Stock for {product} is sufficient (Stock: {stock}, Sales: {sales})")
 
-        Please provide:
-        - An assessment of the current stock and sales volume.
-        - Recommendations on whether the restock order quantity should increase or decrease.
-        - A structured table with recommended restock quantities based on sales trends and stock levels.
-        """
-    response = chat.send_message(query)
+        return response_text
 
-    chat.history.append({"role": "user", "parts": [product_name]})
-    chat.history.append({"role": "model", "parts": [response]})
-
-    print(response.text)
-
-# Chat Function
-def chat():
-    df = read_data_set()
-    print("Welcome, enter a product name to get stock quantity! (type quit to exit) \n")
-    while True:
-        inp = input("You: ")
-        if inp.lower() == "quit":
-            break
-        get_recommendations(df, inp)
-
-chat()
+    except Exception as e:
+        error_msg = f"Error generating recommendation: {str(e)}"
+        print(error_msg)
+        return error_msg
