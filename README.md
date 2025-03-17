@@ -10,21 +10,31 @@ These instructions will get you a copy of the project up and running on your loc
 
 Need to install java-21-openjdk-devel
 
-### Installing
+### Using
 
-Navigate to backend/ai/src/AI and run the following command within your terminal
+Navigate to backend/ai and run the following command within your terminal
 
 ```
-pip install -r requirements.txt
+mvn spring-boot:run
+```
+
+Then Navigate to backend/ai/src/AI and run the following program for windows
+
+```
+python app.py
+```
+
+And the following for non windows devices
+
+```
+python3 app.py
 ```
 
 ## Built With
 
-* [Spring](https://start.spring.io/) - The backend framework used
-* [Maven](https://maven.apache.org/) - Dependency Management
-* [Vue](https://vuejs.org/) - The fronted framework used
+- [Spring](https://start.spring.io/) - The backend framework used
+- [Maven](https://maven.apache.org/) - Dependency Management
 
 ## License
 
-This project does not used any licenses
-
+As of the moment this project does not used any licenses
